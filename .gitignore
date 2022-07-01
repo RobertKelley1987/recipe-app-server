@@ -1,0 +1,3 @@
+# do not push npm packages or .env file to github
+/node_modules
+.env
