@@ -11,7 +11,10 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     favorites: [String],
-    lists: [[String]]
+    lists: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'List'
+    }]
 });
 
 userSchema.pre('save', async function(next) {
