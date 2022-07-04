@@ -122,6 +122,18 @@ app.get('/lists/:listId', catchAsync(async (req, res) => {
     res.status(200).send({ list: foundList });
 }));
 
+//route to edit list name
+app.put('/lists/:listId', catchAsync(async (req, res) => {
+    const { listId } = req.params, { name } = req.body;
+    const foundList = await List.findById(listId);
+    if(!foundList) {
+        throw new ExpressError(404, 'The list with this id could not be found');
+    }
+    foundList.name = name;
+    await foundList.save();
+    res.status(200).send({ list: foundList });
+}));
+
 app.post('/lists/:listId/recipes', catchAsync(async (req, res) => {
     const { listId } = req.params, { recipeId } = req.body;
     const foundList = await List.findById(listId);
