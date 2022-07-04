@@ -133,6 +133,17 @@ app.post('/lists/:listId/recipes', catchAsync(async (req, res) => {
     res.status(200).send({ list: foundList });
 }));
 
+app.delete('/lists/:listId/recipes/:recipeId', catchAsync(async (req, res) => {
+    const { listId, recipeId } = req.params;
+    const foundList = await List.findById(listId);
+    if(!foundList) {
+        throw new ExpressError(404, 'The list with this id could not be found');
+    }
+    foundList.recipes = foundList.recipes.filter(id => id !== recipeId);
+    await foundList.save();
+    res.status(200).send({ list: foundList });
+}));
+
 // ERROR HANDLING
 app.use((err, req, res, next) => {
     if(err.statusCode === 401) {
