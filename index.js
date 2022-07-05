@@ -58,13 +58,10 @@ app.post('/logout', catchAsync(async (req, res) => {
     res.status(200).send({ userId: null, message:'OK' });
 }));
 
-// USER -- GET USER DATA (favs and lists)
+// USER -- GET USER DATA (favs and lists) -- ***THIS IS NOT VERY RESTFUL***
 app.get('/users/:userId', catchAsync(async (req, res) => {
     const { userId } = req.params;
     const foundUser = await User.findById(userId).populate('lists');
-    console.log("LISTS:");
-    console.log(foundUser.lists[0]);
-    console.log(foundUser.lists);
     if(!foundUser) {
         throw new ExpressError(404, 'The user with the user id provided could not be found');
     }
@@ -98,6 +95,15 @@ app.get('/users/:userId/favorites', catchAsync(async (req, res) => {
 }));
 
 // LIST ROUTES
+app.get('/users/:userId/lists', catchAsync(async (req, res) => {
+    const { userId } = req.params;
+    const foundUser = await User.findById(userId).populate('lists');
+    if(!foundUser) {
+        throw new ExpressError(404, 'The user with the user id provided could not be found');
+    }
+    res.status(200).send({ lists: foundUser.lists}) 
+}));
+
 app.post('/users/:userId/lists', catchAsync(async (req, res) => {
     const { userId } = req.params, { name } = req.body;
     const foundUser = await User.findById(userId);
@@ -105,7 +111,7 @@ app.post('/users/:userId/lists', catchAsync(async (req, res) => {
         throw new ExpressError(404, 'The user with the user id provided could not be found');
     } 
     // generate list name if user did not provide one yet
-    let listName = !name ? `List #${foundUser.lists.length + 1}` : name;
+    let listName = !name ? `Untitled List #${foundUser.lists.length}` : name;
     const newList = await List.create({ name: listName });
     console.log('list id: ' + newList._id);
     foundUser.lists.push(newList);
@@ -127,9 +133,10 @@ app.put('/lists/:listId', catchAsync(async (req, res) => {
     const { listId } = req.params, { name } = req.body;
     const foundList = await List.findById(listId);
     if(!foundList) {
-        throw new ExpressError(404, 'The list with this id could not be found');
+        throw new ExpressError(404, 'The list with this id number could not be found');
     }
-    foundList.name = name;
+    // If user left name blank, insert a placeholder. Otherwise use name provided.
+    foundList.name = name === '' ? `Untitled List #${foundUser.lists.length}` : name;
     await foundList.save();
     res.status(200).send({ list: foundList });
 }));
