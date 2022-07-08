@@ -10,7 +10,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    favorites: [String],
+    favorites: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Recipe'
+    }],
     lists: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'List'
