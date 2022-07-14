@@ -79,15 +79,21 @@ app.post('/users/:userId/favorites', catchAsync(async (req, res) => {
     if(!foundUser) {
         throw new ExpressError(404, 'The user with the user id provided could not be found');
     } 
-    const indexOfRecipe = foundUser.favorites.indexOf(fav => fav.apiId === recipe.apiId);
+    const indexOfRecipe = foundUser.favorites.findIndex(fav => fav.apiId === recipe.apiId);
+    // Test if recipe exists in user's favorites list
     if(indexOfRecipe !== -1) {
+        // Remove from favorites
         foundUser.favorites.splice(indexOfRecipe, 1);
     } else {
+        // Create new recipe
         const newRecipe = await Recipe.create(recipe);
+        // Test create recipe method failed
         if(!newRecipe) {
+            // Throw error
             throw new ExpressError(500, 'Failed to create new recipe');
         }
-        foundUser.favorites.push(newRecipe);
+        // Add new favorite to beginning of array
+        foundUser.favorites = [newRecipe, ...foundUser.favorites];
     }
     await foundUser.save();
     res.status(200).send({ favorites: foundUser.favorites });
@@ -115,12 +121,12 @@ app.get('/users/:userId/lists', catchAsync(async (req, res) => {
 
 app.post('/users/:userId/lists', catchAsync(async (req, res) => {
     const { userId } = req.params, { name } = req.body;
-    const foundUser = await User.findById(userId).populate({ path: 'lists', populate: { path: 'recipes' } });;
+    const foundUser = await User.findById(userId).populate({ path: 'lists', populate: { path: 'recipes' } });
     if(!foundUser) {
         throw new ExpressError(404, 'The user with the user id provided could not be found');
     } 
     // generate list name if user did not provide one yet
-    let listName = !name ? `Untitled List #${foundUser.lists.length}` : name;
+    let listName = !name ? `Untitled List #${foundUser.lists.length + 1}` : name;
     const newList = await List.create({ name: listName });
     if(!newList) {
         throw ExpressError(500, 'Failed to create new list');
@@ -150,9 +156,33 @@ app.put('/lists/:listId', catchAsync(async (req, res) => {
         throw new ExpressError(404, 'The list with this id number could not be found');
     }
     // If user left name blank, insert a placeholder. Otherwise use name provided.
-    foundList.name = name === '' ? `Untitled List #${foundUser.lists.length}` : name;
+    foundList.name = name === '' ? `Untitled List #${foundUser.lists.length + 1}` : name;
     await foundList.save();
     res.status(200).send({ list: foundList });
+}));
+
+// route to delete a list
+app.delete('user/:userId/lists/:listId', catchAsync(async(req, res) => {
+    const { userId, listId } = req.params;
+    // Throw error if request is missing user id or list id
+    if(!listId) {
+        throw new ExpressError(400, 'Please provide a valid list id to continue.');
+    }
+    if(!userId) {
+        throw new ExpressError(400, 'Please provide a valid user id to continue.');
+    }
+    // Delete list
+    const { deletedCount } = await Note.deleteOne({ _id: listId });
+    // Throw error message if deletion was not successful
+    if(!deletedCount) {
+        throw new ExpressError(500, 'Failed to delete list. Please try again later.');
+    }
+    // Find and return updated user lists
+    const foundUser = await User.findById(userId).populate({ path: 'lists', populate: { path: 'recipes' } });
+    if(!foundUser) {
+        throw new ExpressError(500, 'Failed to fetch updated user data. Please try again later.');
+    }
+    return res.status(200).send({ lists: foundUser.lists });
 }));
 
 app.post('/lists/:listId/recipes', catchAsync(async (req, res) => {
@@ -169,7 +199,7 @@ app.post('/lists/:listId/recipes', catchAsync(async (req, res) => {
         throw new ExpressError(404, 'The list with this id could not be found');
     }
     // Return error message if recipe is already included on this list
-    if(foundList.recipes.indexOf(recipe => recipe.apiId === recipeId) !== -1) {
+    if(foundList.recipes.findIndex(listRecipe => listRecipe.apiId === recipe.apiId) !== -1) {
         throw new ExpressError(400, 'This recipe has already been added to this list')
     }
     foundList.recipes.push(newRecipe);
@@ -179,7 +209,7 @@ app.post('/lists/:listId/recipes', catchAsync(async (req, res) => {
 
 app.delete('/lists/:listId/recipes/:recipeId', catchAsync(async (req, res) => {
     const { listId, recipeId } = req.params;
-    const foundList = await List.findById(listId);
+    const foundList = await List.findById(listId).populate('recipes');
     if(!foundList) {
         throw new ExpressError(404, 'The list with this id could not be found');
     }
