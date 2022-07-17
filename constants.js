@@ -1,3 +1,1 @@
-module.exports = {
-    mongoUrl: 'mongodb://localhost/recipe-app'
-}; 
+module.exports.mongoUrl = 'mongodb://localhost/recipe-app';

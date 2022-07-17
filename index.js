@@ -1,37 +1,48 @@
-require('dotenv').config();
+if(process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
-const { mongoUrl } = require('./constants');
-const session = require('./session-options');
+const MongoStore = require('connect-mongo');
+const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost/recipe-app'; // database url
+const session = require('express-session');
 
+// Connect to database
 mongoose.connect(mongoUrl, { useNewUrlParser: true });
-app.use(session);
+
+// Configure session store
+app.use(session({
+    cookie: {
+        httpOnly: true,
+        maxAge: 43200000, // 12 hrs,
+        sameSite: 'strict'
+    },
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.SECRET,
+    store: MongoStore.create({ mongoUrl: mongoUrl, touchAfter: 24 * 3600 })
+}));
+
+// Use JSON parsing middleware on all routes
 app.use(express.json());
 
+// Import Routes
 const indexRoutes = require('./routes/index');
 const listRoutes = require('./routes/lists');
 const favoriteRoutes = require('./routes/favorites');
 
+// Apply routing middleware
 app.use('/', indexRoutes);
 app.use('/users/:userId/lists', listRoutes);
 app.use('/users/:userId/favorites', favoriteRoutes);
 
-// ERROR HANDLING
+// Error Handling
 app.use((err, req, res, next) => {
-    if(err.statusCode === 401) {
+    if(err) {
         return res.send({ userId: null, err: err });
     }
-
-    if(err.statusCode === 400) {
-        return res.send({ userId: null, err: err });
-    }
-
-    if(err.statusCode === 404) {
-        return res.send({ err: err });
-    }
-
-})
+});
 
 app.listen(3001, () => console.log('The server listens...'));
