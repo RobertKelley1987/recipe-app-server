@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost/recipe-app'; // database url
 const session = require('express-session');
+const cors = require('cors');
 
 // Connect to database
 mongoose.connect(mongoUrl, { useNewUrlParser: true });
@@ -27,6 +28,8 @@ app.use(session({
 
 // Use JSON parsing middleware on all routes
 app.use(express.json());
+// Enable CORS for all routes 
+app.use(cors());
 
 // Import Routes
 const indexRoutes = require('./routes/index');
