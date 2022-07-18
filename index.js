@@ -32,7 +32,7 @@ app.use(express.json());
 
 // Enable CORS for all routes 
 app.use(cors({
-    origin: 'https://pacific-anchorage-32368.herokuapp.com',
+    origin: 'http://localhost:3000',
     credentials: true
 }));
 
