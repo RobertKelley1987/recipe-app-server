@@ -31,7 +31,7 @@ app.use(express.json());
 
 // Enable CORS for all routes 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'https://remarkable-panda-0f2ef1.netlify.app',
     credentials: true
 }));
 
