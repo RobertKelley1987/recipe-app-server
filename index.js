@@ -16,10 +16,10 @@ mongoose.connect(mongoUrl, { useNewUrlParser: true });
 // Configure session store
 app.use(session({
     cookie: {
-        domain: 'https://pacific-anchorage-32368.herokuapp.com',
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 12, // 12 hrs,
-        sameSite: 'None'
+        sameSite: 'none',
+        secure: true
     },
     resave: false,
     saveUninitialized: false,
