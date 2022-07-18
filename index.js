@@ -29,8 +29,12 @@ app.use(session({
 
 // Use JSON parsing middleware on all routes
 app.use(express.json());
+
 // Enable CORS for all routes 
-app.use(cors());
+app.use(cors({
+    origin: 'https://pacific-anchorage-32368.herokuapp.com',
+    credentials: true
+}));
 
 // Import Routes
 const indexRoutes = require('./routes/index');
