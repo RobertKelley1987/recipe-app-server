@@ -17,8 +17,8 @@ mongoose.connect(mongoUrl, { useNewUrlParser: true });
 app.use(session({
     cookie: {
         httpOnly: true,
-        maxAge: 43200000, // 12 hrs,
-        sameSite: 'strict'
+        maxAge: 1000 * 60 * 60 * 12, // 12 hrs,
+        sameSite: 'None'
     },
     resave: false,
     saveUninitialized: false,

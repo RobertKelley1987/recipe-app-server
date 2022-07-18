@@ -47,6 +47,7 @@ module.exports.signUp = async (req, res) => {
 
 // Check if user is already logged
 module.exports.validateSession = (req, res) => {
+    console.log('validate user');
     // Use isLoggedIn middleware before this function to confirm if user is logged in,
     // then send back user id for front end use
     res.status(200).send({ userId: req.session.userId });
