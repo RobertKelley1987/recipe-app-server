@@ -21,8 +21,8 @@ app.use(session({
         sameSite: 'none',
         secure: true
     },
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     secret: process.env.SECRET,
     store: MongoStore.create({ mongoUrl: mongoUrl, touchAfter: 24 * 3600 })
 }));
