@@ -30,6 +30,8 @@ app.use(session({
 // Use JSON parsing middleware on all routes
 app.use(express.json());
 
+app.set('trust proxy', 1);
+
 // Enable CORS for all routes 
 app.use(cors({
     origin: 'https://remarkable-panda-0f2ef1.netlify.app',
