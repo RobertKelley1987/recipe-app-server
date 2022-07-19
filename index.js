@@ -16,7 +16,6 @@ mongoose.connect(mongoUrl, { useNewUrlParser: true });
 // Configure session store
 app.use(session({
     cookie: {
-        domain: 'https://remarkable-panda-0f2ef1.netlify.app',
         maxAge: 1000 * 60 * 60 * 12, // 12 hrs,
         sameSite: 'none',
         secure: true
